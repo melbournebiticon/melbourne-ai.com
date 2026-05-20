@@ -1,0 +1,36 @@
+# Core Dependencies
+moviepy==1.0.3
+ffmpeg-python==0.2.1
+Pillow==10.1.0
+numpy==1.24.3
+opencv-python==4.8.1.78
+
+# AI & Machine Learning
+torch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.2
+diffusers==0.21.4
+transformers==4.34.0
+accelerate==0.23.0
+
+# Text-to-Speech
+TTS==0.19.1
+
+# LLM Integration (for script generation)
+ollama==0.0.11
+langchain==0.0.347
+
+# Web Interface (Optional)
+gradio==4.21.0
+
+# Utilities & Helpers
+python-dotenv==1.0.0
+pydantic==2.4.2
+requests==2.31.0
+pyyaml==6.0.1
+tqdm==4.66.1
+
+# Development & Testing (Optional)
+pytest==7.4.3
+black==23.11.0
+flake8==6.1.0
