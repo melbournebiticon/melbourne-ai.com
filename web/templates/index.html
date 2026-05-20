@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Melbourne AI - Generate Videos from Prompts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Transform Your Ideas Into AI-Generated Videos</h1>
+            <p>Generate unique, professional-quality videos with AI visuals, animations, voiceovers, and automatic editing.</p>
+            <div class="hero-features">
+                <div class="feature-chip">🤖 AI-Generated Visuals</div>
+                <div class="feature-chip">✨ Automatic Animations</div>
+                <div class="feature-chip">🎙️ Natural Narration</div>
+                <div class="feature-chip">📹 Professional Editing</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Form Section -->
+    <section class="form-section" id="generator">
+        <div class="form-container">
+            <h2>📝 Create Your Video</h2>
+
+            <form id="videoForm" class="video-form">
+                <!-- Prompt Input -->
+                <div class="form-group">
+                    <label for="prompt">📌 Video Topic/Prompt *</label>
+                    <textarea
+                        id="prompt"
+                        name="prompt"
+                        placeholder="Describe what your video should be about. Example: 'Educational video about the water cycle for kids'"
+                        rows="4"
+                        required
+                        class="form-input"
+                    ></textarea>
+                    <small>Be specific about the topic, style, and target audience</small>
+                </div>
+
+                <!-- Duration Slider -->
+                <div class="form-group">
+                    <label for="duration">⏱️ Video Duration: <span id="durationValue">60</span>s</label>
+                    <input
+                        type="range"
+                        id="duration"
+                        name="duration"
+                        min="30"
+                        max="600"
+                        value="60"
+                        step="10"
+                        class="form-slider"
+                    >
+                    <div class="slider-labels">
+                        <small>30s</small>
+                        <small>10m</small>
+                    </div>
+                </div>
+
+                <!-- Style Selection -->
+                <div class="form-group">
+                    <label for="style">🎨 Content Style</label>
+                    <select id="style" name="style" class="form-select" required>
+                        <option value="educational">📚 Educational</option>
+                        <option value="entertaining">🎭 Entertaining</option>
+                        <option value="informative">📰 Informative</option>
+                        <option value="general">🎯 General</option>
+                    </select>
+                </div>
+
+                <!-- Voice Selection -->
+                <div class="form-group">
+                    <label for="voice">🎙️ Narrator Voice</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="voice" value="female" checked> Female
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="voice" value="male"> Male
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-large" id="generateBtn">
+                    <span class="btn-text">🚀 Generate Video</span>
+                    <span class="btn-loader" style="display: none;">⏳ Generating...</span>
+                </button>
+
+                <!-- Status Message -->
+                <div id="statusMessage" class="status-message" style="display: none;"></div>
+            </form>
+        </div>
+
+        <!-- Video Output -->
+        <div class="output-container" id="outputContainer" style="display: none;">
+            <h2>🎥 Generated Video</h2>
+            <video id="videoOutput" width="100%" controls style="max-width: 800px; border-radius: 8px; margin-top: 20px;">
+                <source id="videoSource" src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-info" id="videoInfo"></div>
+            <button class="btn btn-secondary" onclick="resetForm()">Generate Another Video</button>
+        </div>
+    </section>
+
+    <!-- Projects History Section -->
+    <section class="projects-section" id="projects">
+        <h2>📊 Recent Projects</h2>
+        <div class="projects-container" id="projectsContainer">
+            <p class="loading">Loading projects...</p>
+        </div>
+        <button class="btn btn-outline" id="refreshBtn">🔄 Refresh Projects</button>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <h2>About Melbourne AI</h2>
+        <div class="about-content">
+            <h3>What is Melbourne AI Video Creator?</h3>
+            <p>
+                Melbourne AI is an open-source, automated video generation system that transforms text prompts into
+                professional-quality videos. It combines multiple AI models to create unique visuals, animations,
+                voiceovers, and automatic editing—all without requiring paid APIs or cloud services.
+            </p>
+
+            <h3>⚙️ How It Works</h3>
+            <ol class="feature-list">
+                <li><strong>Script Generation:</strong> AI creates a detailed video script from your prompt</li>
+                <li><strong>Image Generation:</strong> Unique images are created for each scene using Stable Diffusion</li>
+                <li><strong>Animation:</strong> Static images are animated with effects like Ken Burns and fades</li>
+                <li><strong>Voiceover:</strong> Natural narration is generated using Text-to-Speech</li>
+                <li><strong>Video Editing:</strong> All elements are combined into a professional final video</li>
+            </ol>
+
+            <h3>🔧 Technology Stack</h3>
+            <ul class="tech-list">
+                <li>Python (FastAPI, MoviePy, FFmpeg)</li>
+                <li>Stable Diffusion (AI Image Generation)</li>
+                <li>Coqui TTS (Text-to-Speech)</li>
+                <li>Ollama/LM Studio (LLM Integration)</li>
+                <li>Flask (Web Framework)</li>
+            </ul>
+
+            <h3>💰 Cost</h3>
+            <p><strong>100% Free!</strong> All tools are open-source and self-hosted. No API fees, no cloud costs.</p>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update duration display
+    document.getElementById('duration').addEventListener('input', function(e) {
+        document.getElementById('durationValue').textContent = e.target.value;
+    });
+
+    // Handle form submission
+    document.getElementById('videoForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const prompt = document.getElementById('prompt').value;
+        const duration = document.getElementById('duration').value;
+        const style = document.getElementById('style').value;
+        const voice = document.querySelector('input[name="voice"]:checked').value;
+
+        const generateBtn = document.getElementById('generateBtn');
+        const btnText = generateBtn.querySelector('.btn-text');
+        const btnLoader = generateBtn.querySelector('.btn-loader');
+
+        // Show loading state
+        generateBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'inline';
+
+        try {
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    duration: parseInt(duration),
+                    style: style,
+                    voice: voice,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                // Show video output
+                document.getElementById('videoSource').src = data.video_path;
+                document.getElementById('videoOutput').load();
+                document.getElementById('outputContainer').style.display = 'block';
+                document.getElementById('videoInfo').innerHTML = `
+                    <p><strong>Prompt:</strong> ${prompt}</p>
+                    <p><strong>Duration:</strong> ${duration}s | <strong>Style:</strong> ${style} | <strong>Voice:</strong> ${voice}</p>
+                    <p><strong>Generated:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
+                `;
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            alert('Error generating video: ' + error.message);
+        } finally {
+            generateBtn.disabled = false;
+            btnText.style.display = 'inline';
+            btnLoader.style.display = 'none';
+        }
+    });
+
+    // Load projects
+    async function loadProjects() {
+        try {
+            const response = await fetch('/api/history');
+            const data = await response.json();
+
+            const container = document.getElementById('projectsContainer');
+            if (data.data.length === 0) {
+                container.innerHTML = '<p>No projects yet. Create your first video!</p>';
+                return;
+            }
+
+            container.innerHTML = data.data.reverse().map(project => `
+                <div class="project-card">
+                    <h4>${project.prompt.substring(0, 50)}...</h4>
+                    <p><small>⏱️ ${project.duration}s | 🎨 ${project.style} | 🎙️ ${project.voice}</small></p>
+                    <p><small>${new Date(project.timestamp).toLocaleString()}</small></p>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading projects:', error);
+        }
+    }
+
+    // Refresh button
+    document.getElementById('refreshBtn').addEventListener('click', loadProjects);
+
+    // Reset form
+    function resetForm() {
+        document.getElementById('videoForm').reset();
+        document.getElementById('outputContainer').style.display = 'none';
+        document.getElementById('durationValue').textContent = '60';
+        document.getElementById('duration').value = '60';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Load projects on page load
+    window.addEventListener('load', loadProjects);
+</script>
+{% endblock %}
